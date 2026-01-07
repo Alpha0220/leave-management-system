@@ -1,10 +1,43 @@
 /**
- * Create Leave Request API Route
- * POST /api/leaves
+ * Leaves API Route
+ * GET /api/leaves?empId=xxx - Get leaves
+ * POST /api/leaves - Create leave request
  */
 
 import { NextResponse } from 'next/server';
-import { createLeave } from '@/services/leave.service';
+import { getLeavesByEmpId, getAllLeaves, createLeave } from '@/services/leave.service';
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const empId = searchParams.get('empId');
+
+    let leaves;
+    
+    if (empId) {
+      // Get leaves for specific employee
+      leaves = await getLeavesByEmpId(empId);
+    } else {
+      // Get all leaves (for admin)
+      leaves = await getAllLeaves();
+    }
+
+    return NextResponse.json({
+      success: true,
+      leaves,
+    });
+  } catch (error) {
+    console.error('Get leaves error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'ไม่สามารถโหลดข้อมูลได้',
+      },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {

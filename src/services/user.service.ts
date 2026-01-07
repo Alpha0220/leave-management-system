@@ -5,7 +5,7 @@
 
 'use server';
 
-import { readSheet, writeSheet, appendSheet } from '@/lib/google-sheets';
+import { readSheet, writeSheet, appendSheet, clearSheet } from '@/lib/google-sheets';
 import { SHEET_NAMES, DEFAULT_QUOTAS } from '@/lib/constants';
 import type { User, UserCreateInput, UserUpdateInput } from '@/types';
 
@@ -19,8 +19,10 @@ export async function getAllUsers(): Promise<User[]> {
     return []; // Only headers or empty
   }
 
-  // Skip header row
-  return rows.slice(1).map(rowToUser);
+  // Skip header row and filter out empty rows
+  return rows.slice(1)
+    .filter(row => row && row[0] && String(row[0]).trim() !== '')
+    .map(rowToUser);
 }
 
 /**
@@ -164,6 +166,32 @@ export async function registerUser(
     password,
     isRegistered: true
   });
+}
+
+/**
+ * Delete user
+ */
+export async function deleteUser(empId: string): Promise<void> {
+  const users = await getAllUsers();
+  const userIndex = users.findIndex(u => u.empId === empId);
+
+  if (userIndex === -1) {
+    throw new Error(`User with empId ${empId} not found`);
+  }
+
+  // Remove user from array
+  const updatedUsers = users.filter(u => u.empId !== empId);
+
+  // Clear sheet first to prevent ghost rows
+  await clearSheet(SHEET_NAMES.USERS);
+
+  // Rewrite entire sheet with updated users
+  const rows = [
+    ['empId', 'name', 'password', 'role', 'leaveQuota', 'sickLeaveQuota', 'personalLeaveQuota', 'isRegistered', 'createdAt'],
+    ...updatedUsers.map(userToRow)
+  ];
+
+  await writeSheet(SHEET_NAMES.USERS, 'A1:I' + (rows.length), rows);
 }
 
 // Helper functions

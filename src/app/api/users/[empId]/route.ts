@@ -1,54 +1,84 @@
 /**
- * Get User by Employee ID API Route
- * GET /api/users/[empId]
+ * User Management API Route
+ * PATCH /api/users/[empId] - Update user
+ * DELETE /api/users/[empId] - Delete user
  */
 
 import { NextResponse } from 'next/server';
-import { getUserByEmpId } from '@/services/user.service';
+import { updateUser, deleteUser } from '@/services/user.service';
 
-export async function GET(
+export async function PATCH(
   request: Request,
-  { params }: { params: { empId: string } }
+  { params }: { params: Promise<{ empId: string }> }
 ) {
   try {
-    const { empId } = params;
+    const { empId } = await params;
+    const body = await request.json();
+    const { name, role, leaveQuota, sickLeaveQuota, personalLeaveQuota } = body;
 
-    if (!empId) {
+    // Validate input
+    if (!name || !role) {
       return NextResponse.json(
-        { success: false, error: 'Employee ID is required' },
+        { success: false, error: 'กรุณากรอกข้อมูลให้ครบถ้วน' },
         { status: 400 }
       );
     }
 
-    const user = await getUserByEmpId(empId);
+    // Update user
+    await updateUser(empId, {
+      name,
+      role,
+      leaveQuota,
+      sickLeaveQuota,
+      personalLeaveQuota,
+    });
 
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    // Return user data without password
     return NextResponse.json({
       success: true,
-      user: {
-        empId: user.empId,
-        name: user.name,
-        role: user.role,
-        isRegistered: user.isRegistered,
-        leaveQuota: user.leaveQuota,
-        sickLeaveQuota: user.sickLeaveQuota,
-        personalLeaveQuota: user.personalLeaveQuota,
-      },
+      message: 'อัพเดทข้อมูลสำเร็จ',
     });
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Update user error:', error);
 
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get user',
+        error: error instanceof Error ? error.message : 'อัพเดทข้อมูลไม่สำเร็จ',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ empId: string }> }
+) {
+  try {
+    const { empId } = await params;
+
+    // Prevent deleting default admin
+    if (empId === 'ADMIN001') {
+      return NextResponse.json(
+        { success: false, error: 'ไม่สามารถลบผู้ดูแลระบบหลักได้' },
+        { status: 403 }
+      );
+    }
+
+    // Delete user
+    await deleteUser(empId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'ลบพนักงานสำเร็จ',
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'ลบพนักงานไม่สำเร็จ',
       },
       { status: 500 }
     );

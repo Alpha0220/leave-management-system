@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/contexts/auth.context';
+import { useToast } from '@/contexts/toast.context';
 import { useRouter } from 'next/navigation';
 import { LogOut, User, Calendar, FileText, BarChart } from 'lucide-react';
 import { LeaveRequestForm } from '@/components/features/leave-request-form';
@@ -17,12 +18,18 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { user, logout } = useAuth();
+  const toast = useToast();
   const router = useRouter();
   const [showLeaveForm, setShowLeaveForm] = useState(false);
 
   const handleLogout = () => {
     logout();
+    toast.success('ออกจากระบบสำเร็จ');
     router.push('/login');
+  };
+
+  const handleSuccess = () => {
+    toast.success('ส่งคำขอลาสำเร็จ!');
   };
 
   return (
@@ -101,7 +108,7 @@ function DashboardContent() {
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="font-bold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <button 
               onClick={() => setShowLeaveForm(true)}
               className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left"
@@ -111,10 +118,22 @@ function DashboardContent() {
               <p className="text-sm text-gray-600">สร้างคำขอลาใหม่</p>
             </button>
 
-            <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-left">
+            <button 
+              onClick={() => router.push('/leave/history')}
+              className="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-left"
+            >
               <FileText className="w-6 h-6 text-green-600 mb-2" />
               <p className="font-bold text-gray-900">ประวัติการลา</p>
               <p className="text-sm text-gray-600">ดูประวัติการลาทั้งหมด</p>
+            </button>
+
+            <button 
+              onClick={() => router.push('/calendar')}
+              className="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-left"
+            >
+              <Calendar className="w-6 h-6 text-purple-600 mb-2" />
+              <p className="font-bold text-gray-900">ปฏิทินการลา</p>
+              <p className="text-sm text-gray-600">ดูวันลาของทีม</p>
             </button>
           </div>
         </div>
@@ -142,10 +161,7 @@ function DashboardContent() {
       <LeaveRequestForm
         open={showLeaveForm}
         onClose={() => setShowLeaveForm(false)}
-        onSuccess={() => {
-          // Refresh page or update state
-          window.location.reload();
-        }}
+        onSuccess={handleSuccess}
       />
     </div>
   );

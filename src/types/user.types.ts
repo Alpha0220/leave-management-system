@@ -34,6 +34,7 @@ export interface UserCreateInput {
 export interface UserUpdateInput {
   name?: string;
   password?: string;
+  role?: Role;
   leaveQuota?: number;
   sickLeaveQuota?: number;
   personalLeaveQuota?: number;

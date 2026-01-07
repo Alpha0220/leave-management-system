@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth.context';
 import { UserPlus, Loader2, User, Lock, AlertCircle, CheckCircle } from 'lucide-react';
@@ -14,8 +14,14 @@ export default function RegisterPage() {
   const [employeeName, setEmployeeName] = useState<string | null>(null);
 
   // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+
+  // Don't render form if authenticated
   if (isAuthenticated) {
-    router.push('/dashboard');
     return null;
   }
 

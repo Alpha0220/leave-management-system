@@ -591,36 +591,48 @@
 5. ✅ ~~**Build authentication system**~~ (COMPLETED)
 6. ✅ ~~**Create UI components**~~ (COMPLETED - Basic set)
 7. ✅ ~~**Create Leave Request Form**~~ (COMPLETED)
-8. **Create Leave History Table** - ตารางประวัติการลา ← **NEXT**
-9. **Create Admin Approval Page** - หน้าอนุมัติคำขอ
-10. **Create Employee Management Page** - จัดการพนักงาน
+8. ✅ ~~**Create Leave History Table**~~ (COMPLETED)
+9. ✅ ~~**Create Admin Approval Page**~~ (COMPLETED)
+10. ✅ ~~**Create Employee Management Page**~~ (COMPLETED)
+11. ✅ ~~**Create Settings Page**~~ (COMPLETED)
+12. **Polish UI/UX and Testing** ← **NEXT**
 
 ---
 
 ## 📝 Notes
 
-- **Current Status**: ✅ **Authentication & Leave Request Complete!**
+- **Current Status**: ✅ **Core System Complete!**
   - All services implemented and tested
   - Migration from localStorage to Google Sheets working
   - Auto-initialization of sheets on first run
   - Authentication system fully functional
   - Leave request form with quota checking
+  - Leave history table with filtering
+  - Admin approval system with dialog
+  - Employee management (CRUD operations)
+  - Settings page for system configuration
   - UI components library ready
   
 - **Available Pages**:
   - `/login` - Login page
   - `/register` - Register page
   - `/dashboard` - Employee dashboard with leave request
+  - `/leave/history` - Leave history table
   - `/admin/dashboard` - Admin dashboard
+  - `/admin/leaves` - Admin leave approval page
+  - `/admin/employees` - Employee management page
+  - `/admin/settings` - System settings page
   - `/test-sheets` - Test Google Sheets connection
   - `/migrate` - Migrate data from localStorage
 
-- **Next Milestone**: Build admin approval system and employee management
-- **Estimated Completion**: 1 week (depending on scope)
+- **Next Milestone**: Polish UI/UX, add calendar view, and comprehensive testing
+- **Estimated Completion**: 2-3 days
 - **Team Size**: 1 developer (you + AI assistant)
 
 ---
 
 **Last Updated**: 2026-01-07
-**Version**: 3.0.0 - Authentication & Leave Request Complete
+**Version**: 5.0.0 - Core System Complete
+
+
 
