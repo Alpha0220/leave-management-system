@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/contexts/auth.context';
 import { useToast } from '@/contexts/toast.context';
@@ -17,13 +17,20 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const toast = useToast();
   const router = useRouter();
   const [showLeaveForm, setShowLeaveForm] = useState(false);
 
+  // Refresh user data when dashboard loads
+  useEffect(() => {
+    refreshUser();
+  }, []);
+
   const handleSuccess = () => {
     toast.success('ส่งคำขอลาสำเร็จ!');
+    // Refresh user data after submitting leave request
+    refreshUser();
   };
 
   return (

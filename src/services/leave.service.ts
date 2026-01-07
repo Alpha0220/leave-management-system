@@ -93,8 +93,15 @@ export async function updateLeaveStatus(
     throw new Error(`Leave request with id ${id} not found`);
   }
 
+  const leave = leaves[leaveIndex];
+
+  // If approving, deduct quota
+  if (status === 'approved') {
+    await deductLeaveQuota(leave.empId, leave.type, leave.totalDays);
+  }
+
   const updatedLeave: LeaveRequest = {
-    ...leaves[leaveIndex],
+    ...leave,
     status,
     approverNote,
     updatedAt: new Date().toISOString()
@@ -106,6 +113,40 @@ export async function updateLeaveStatus(
   await writeSheet(SHEET_NAMES.LEAVES, `A${rowNumber}:K${rowNumber}`, [row]);
 
   return updatedLeave;
+}
+
+/**
+ * Deduct leave quota from user
+ */
+async function deductLeaveQuota(
+  empId: string,
+  leaveType: 'annual' | 'sick' | 'personal',
+  days: number
+): Promise<void> {
+  // Import user service functions
+  const { getUserByEmpId, updateUser } = await import('./user.service');
+  
+  const user = await getUserByEmpId(empId);
+  
+  if (!user) {
+    throw new Error(`User with empId ${empId} not found`);
+  }
+
+  // Map leave type to quota field name
+  const quotaFieldMap = {
+    annual: 'leaveQuota',
+    sick: 'sickLeaveQuota',
+    personal: 'personalLeaveQuota'
+  } as const;
+
+  const quotaField = quotaFieldMap[leaveType];
+  const currentQuota = user[quotaField] || 0;
+  const newQuota = Math.max(0, currentQuota - days);
+
+  // Update user quota
+  await updateUser(empId, {
+    [quotaField]: newQuota
+  });
 }
 
 /**

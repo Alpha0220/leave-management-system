@@ -13,6 +13,7 @@ interface AuthContextType {
   loading: boolean;
   login: (user: AuthUser) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
 }
@@ -58,11 +59,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  const refreshUser = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`/api/users/${user.empId}`);
+      const data = await response.json();
+
+      if (data.success && data.user) {
+        const updatedUser: AuthUser = {
+          empId: data.user.empId,
+          name: data.user.name,
+          role: data.user.role,
+          leaveQuota: data.user.leaveQuota,
+          sickLeaveQuota: data.user.sickLeaveQuota,
+          personalLeaveQuota: data.user.personalLeaveQuota,
+        };
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     loading,
     login,
     logout,
+    refreshUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
   };

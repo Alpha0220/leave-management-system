@@ -1,12 +1,48 @@
 /**
  * User Management API Route
+ * GET /api/users/[empId] - Get user by empId
  * PATCH /api/users/[empId] - Update user
  * DELETE /api/users/[empId] - Delete user
  */
 
 import { NextResponse } from 'next/server';
-import { updateUser, deleteUser } from '@/services/user.service';
+import { getUserByEmpId, updateUser, deleteUser } from '@/services/user.service';
 import type { UserUpdateInput } from '@/types';
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ empId: string }> }
+) {
+  try {
+    const { empId } = await params;
+    const user = await getUserByEmpId(empId);
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'ไม่พบข้อมูลผู้ใช้' },
+        { status: 404 }
+      );
+    }
+
+    // Remove password from response
+    const { password: _password, ...userWithoutPassword } = user;
+
+    return NextResponse.json({
+      success: true,
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'ดึงข้อมูลผู้ใช้ไม่สำเร็จ',
+      },
+      { status: 500 }
+    );
+  }
+}
 
 export async function PATCH(
   request: Request,
