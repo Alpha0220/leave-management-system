@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { useAuth } from '@/contexts/auth.context';
-import { useRouter } from 'next/navigation';
-import { LogOut, Settings as SettingsIcon, Save } from 'lucide-react';
+import { Settings as SettingsIcon, Save, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { useToast } from '@/contexts/toast.context';
 
 export default function AdminSettingsPage() {
   return (
@@ -18,8 +17,7 @@ export default function AdminSettingsPage() {
 }
 
 function AdminSettingsContent() {
-  const { logout } = useAuth();
-  const router = useRouter();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
     defaultAnnualLeave: 10,
@@ -37,168 +35,118 @@ function AdminSettingsContent() {
       });
 
       if (response.ok) {
-        alert('บันทึกการตั้งค่าสำเร็จ');
+        toast.success('บันทึกการตั้งค่าสำเร็จ');
       }
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('เกิดข้อผิดพลาดในการบันทึก');
+      toast.error('เกิดข้อผิดพลาดในการบันทึก');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-linear-to-r from-green-600 to-teal-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      {/* Page Title & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">ตั้งค่าระบบ</h1>
+          <p className="text-gray-500 mt-1 uppercase text-xs font-bold tracking-widest">การกำหนดนโยบายและพื้นฐานข้อมูลขององค์กร</p>
+        </div>
+        <Button
+          onClick={handleSave}
+          className="bg-green-600 hover:bg-green-700 text-white font-black rounded-2xl px-8 py-6 shadow-lg shadow-green-100 transition-all active:scale-95"
+          disabled={loading}
+        >
+          <Save className="w-6 h-6 mr-2" />
+          บันทึกการตั้งค่า
+        </Button>
+      </div>
+
+      <div className="max-w-5xl space-y-8">
+        {/* Default Leave Quotas */}
+        <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-50 px-8 py-6">
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/admin/dashboard')}
-                className="text-white/80 hover:text-white transition-colors"
-              >
-                ← กลับ
-              </button>
+              <div className="p-3 bg-green-50 rounded-2xl text-green-600">
+                <SettingsIcon className="w-6 h-6" />
+              </div>
               <div>
-                <h1 className="text-3xl font-bold">ตั้งค่าระบบ</h1>
-                <p className="text-green-100 mt-1">จัดการการตั้งค่าต่างๆ ของระบบ</p>
+                <h2 className="text-xl font-black text-gray-900">โควตาการลาเริ่มต้น</h2>
+                <p className="text-sm text-gray-500">กำหนดโควตาที่พนักงานใหม่จะได้รับ</p>
               </div>
             </div>
-            <button
-              onClick={() => { logout(); router.push('/login'); }}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>ออกจากระบบ</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          {/* Default Leave Quotas */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-3">
-                <SettingsIcon className="w-6 h-6 text-green-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">โควตาการลาเริ่มต้น</h2>
-                  <p className="text-sm text-gray-600">กำหนดจำนวนวันลาเริ่มต้นสำหรับพนักงานใหม่</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
+          </CardHeader>
+          <CardContent className="p-8">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลาพักร้อน (วัน/ปี)</p>
                 <Input
                   type="number"
-                  label="ลาพักร้อน"
                   min={0}
                   value={settings.defaultAnnualLeave}
                   onChange={(e) => setSettings({ ...settings, defaultAnnualLeave: parseInt(e.target.value) || 0 })}
-                  helperText="วันต่อปี"
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
                 />
+              </div>
 
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลาป่วย (วัน/ปี)</p>
                 <Input
                   type="number"
-                  label="ลาป่วย"
                   min={0}
                   value={settings.defaultSickLeave}
                   onChange={(e) => setSettings({ ...settings, defaultSickLeave: parseInt(e.target.value) || 0 })}
-                  helperText="วันต่อปี"
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
                 />
+              </div>
 
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลากิจ (วัน/ปี)</p>
                 <Input
                   type="number"
-                  label="ลากิจ"
                   min={0}
                   value={settings.defaultPersonalLeave}
                   onChange={(e) => setSettings({ ...settings, defaultPersonalLeave: parseInt(e.target.value) || 0 })}
-                  helperText="วันต่อปี"
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
                 />
               </div>
+            </div>
 
-              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-xs font-bold text-blue-900 mb-1">ℹ️ หมายเหตุ:</p>
-                <p className="text-xs text-blue-700">
-                  การตั้งค่านี้จะมีผลกับพนักงานที่เพิ่มใหม่เท่านั้น ไม่มีผลกับพนักงานที่มีอยู่แล้ว
+            <div className="mt-8 bg-amber-50 rounded-2xl p-6 flex items-start space-x-4 border border-amber-100 text-amber-900">
+              <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-black text-sm">ข้อควรระวัง</p>
+                <p className="text-xs font-medium mt-1 leading-relaxed opacity-80">
+                  การเปลี่ยนแปลงนี้จะมีผลเฉพาะกับ **พนักงานที่เพิ่มใหม่เท่านั้น** โดยที่พนักงานปัจจุบันจะยังคงใช้โควตาเดิมที่ระบุในฐานข้อมูลรายบุคคล
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Company Holidays */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-3">
-                <SettingsIcon className="w-6 h-6 text-green-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">วันหยุดประจำปี</h2>
-                  <p className="text-sm text-gray-600">จัดการวันหยุดนักขัตฤกษ์และวันหยุดบริษัท</p>
-                </div>
+        {/* Company Holidays */}
+        <Card className="border-none shadow-sm rounded-3xl overflow-hidden opacity-60">
+          <CardHeader className="bg-white border-b border-gray-50 px-8 py-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
+                <SettingsIcon className="w-6 h-6" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gray-50 rounded-lg p-8 text-center">
-                <p className="text-gray-500">ฟีเจอร์นี้กำลังพัฒนา</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  จะสามารถเพิ่ม แก้ไข และลบวันหยุดได้ในเวอร์ชันถัดไป
-                </p>
+              <div>
+                <h2 className="text-xl font-black text-gray-900">วันหยุดประจำปี</h2>
+                <p className="text-sm text-gray-500">วันหยุดนักขัตฤกษ์และวันหยุดบริษัท</p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* System Information */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-3">
-                <SettingsIcon className="w-6 h-6 text-green-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">ข้อมูลระบบ</h2>
-                  <p className="text-sm text-gray-600">รายละเอียดเกี่ยวกับระบบ</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-1">เวอร์ชัน</p>
-                  <p className="font-bold text-gray-900">4.0.0</p>
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-1">ฐานข้อมูล</p>
-                  <p className="font-bold text-gray-900">Google Sheets</p>
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-1">สถานะ</p>
-                  <p className="font-bold text-green-600">ออนไลน์</p>
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-1">อัพเดทล่าสุด</p>
-                  <p className="font-bold text-gray-900">2026-01-07</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSave}
-              loading={loading}
-              size="lg"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              บันทึกการตั้งค่า
-            </Button>
-          </div>
-        </div>
-      </main>
+            </div>
+          </CardHeader>
+          <CardContent className="p-12 text-center">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <SettingsIcon className="w-8 h-8 text-gray-300 animate-spin-slow" />
+            </div>
+            <p className="text-gray-400 font-black uppercase text-xs tracking-widest">Feature Under Development</p>
+            <p className="text-gray-500 mt-2 text-sm max-w-xs mx-auto">ระบบจัดการวันหยุดแบบกำหนดเองกำลังอยู่ในช่วงปรับปรุง จะพร้อมใช้งานในเร็วๆ นี้</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

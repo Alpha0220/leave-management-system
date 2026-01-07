@@ -205,7 +205,7 @@ function rowToUser(row: (string | number | boolean)[]): User {
     leaveQuota: typeof row[4] === 'number' ? row[4] : parseInt(String(row[4])) || 0,
     sickLeaveQuota: typeof row[5] === 'number' ? row[5] : parseInt(String(row[5])) || 0,
     personalLeaveQuota: typeof row[6] === 'number' ? row[6] : parseInt(String(row[6])) || 0,
-    isRegistered: row[7] === 'true' || row[7] === true,
+    isRegistered: String(row[7]).toLowerCase() === 'true' || row[7] === true,
     createdAt: String(row[8] || new Date().toISOString())
   };
 }

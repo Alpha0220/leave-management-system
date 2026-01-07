@@ -6,6 +6,7 @@
 
 import { NextResponse } from 'next/server';
 import { updateUser, deleteUser } from '@/services/user.service';
+import type { UserUpdateInput } from '@/types';
 
 export async function PATCH(
   request: Request,
@@ -14,24 +15,28 @@ export async function PATCH(
   try {
     const { empId } = await params;
     const body = await request.json();
-    const { name, role, leaveQuota, sickLeaveQuota, personalLeaveQuota } = body;
+    const { 
+      name, 
+      role, 
+      leaveQuota, 
+      sickLeaveQuota, 
+      personalLeaveQuota,
+      password,
+      isRegistered
+    } = body;
 
-    // Validate input
-    if (!name || !role) {
-      return NextResponse.json(
-        { success: false, error: 'กรุณากรอกข้อมูลให้ครบถ้วน' },
-        { status: 400 }
-      );
-    }
+    // Construct updates object
+    const updates: UserUpdateInput = {};
+    if (name !== undefined) updates.name = name;
+    if (role !== undefined) updates.role = role;
+    if (leaveQuota !== undefined) updates.leaveQuota = leaveQuota;
+    if (sickLeaveQuota !== undefined) updates.sickLeaveQuota = sickLeaveQuota;
+    if (personalLeaveQuota !== undefined) updates.personalLeaveQuota = personalLeaveQuota;
+    if (password !== undefined) updates.password = password;
+    if (isRegistered !== undefined) updates.isRegistered = isRegistered;
 
     // Update user
-    await updateUser(empId, {
-      name,
-      role,
-      leaveQuota,
-      sickLeaveQuota,
-      personalLeaveQuota,
-    });
+    await updateUser(empId, updates);
 
     return NextResponse.json({
       success: true,

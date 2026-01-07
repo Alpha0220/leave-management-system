@@ -108,7 +108,7 @@ export function LeaveApprovalDialog({
 
           <div>
             <p className="text-xs text-gray-500 mb-1">เหตุผล</p>
-            <p className="text-gray-900">{leave.reason}</p>
+            <p className="text-gray-900 wrap-break-word whitespace-pre-wrap">{leave.reason}</p>
           </div>
         </div>
 

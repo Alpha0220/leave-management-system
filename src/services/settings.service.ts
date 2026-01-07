@@ -5,7 +5,7 @@
 
 'use server';
 
-import { readSheet, writeSheet, appendSheet } from '@/lib/google-sheets';
+import { readSheet, writeSheet, appendSheet, clearSheet } from '@/lib/google-sheets';
 import { SHEET_NAMES } from '@/lib/constants';
 import type { Setting, Holiday, PolicySettings } from '@/types';
 
@@ -21,6 +21,7 @@ export async function getSettings(year: number): Promise<Setting[]> {
 
   return rows
     .slice(1)
+    .filter(row => row && row[0])
     .map(rowToSetting)
     .filter(s => s.year === year);
 }
@@ -95,6 +96,7 @@ export async function getHolidays(year: number): Promise<Holiday[]> {
 
   return rows
     .slice(1)
+    .filter(row => row && row[0])
     .map(rowToHoliday)
     .filter(h => {
       const holidayYear = new Date(h.date).getFullYear();
@@ -121,8 +123,11 @@ export async function deleteHoliday(date: string): Promise<void> {
   // Filter out the holiday to delete
   const filteredRows = rows.filter((row, index) => {
     if (index === 0) return true; // Keep header
-    return String(row[0]) !== date;
+    return row && row[0] && String(row[0]) !== date;
   });
+
+  // Clear sheet first to prevent ghost rows
+  await clearSheet(SHEET_NAMES.HOLIDAYS);
 
   // Rewrite the entire sheet
   if (filteredRows.length > 0) {

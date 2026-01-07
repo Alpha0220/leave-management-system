@@ -194,16 +194,6 @@
 - [ ] Create `skeleton.tsx` (Loading states)
 
 ### 5.2 Layout Components (`src/components/layout/`)
-- [ ] Create `navbar.tsx`
-  - [ ] Logo/Brand
-  - [ ] User info display
-  - [ ] Logout button
-  - [ ] Mobile menu toggle
-- [ ] Create `sidebar.tsx`
-  - [ ] Navigation links (role-based)
-  - [ ] Active state highlighting
-  - [ ] Collapsible on mobile
-- [ ] Create `footer.tsx`
   - [ ] Copyright info
   - [ ] Version number
 

@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { useAuth } from '@/contexts/auth.context';
-import { useRouter } from 'next/navigation';
-import { LogOut, Users, Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmployeeFormDialog } from '@/components/features/employee-form-dialog';
+import { useToast } from '@/contexts/toast.context';
 
 interface Employee {
   empId: string;
@@ -28,18 +26,13 @@ export default function AdminEmployeesPage() {
 }
 
 function AdminEmployeesContent() {
-  const { logout } = useAuth();
-  const router = useRouter();
+  const toast = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/users');
@@ -50,10 +43,15 @@ function AdminEmployeesContent() {
       }
     } catch (error) {
       console.error('Error fetching employees:', error);
+      toast.error('ไม่สามารถโหลดข้อมูลพนักงานได้');
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
 
   const handleEdit = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -71,10 +69,41 @@ function AdminEmployeesContent() {
       });
 
       if (response.ok) {
+        toast.success('ลบพนักงานสำเร็จ');
         await fetchEmployees();
+      } else {
+        toast.error('ลบพนักงานไม่สำเร็จ');
       }
     } catch (error) {
       console.error('Error deleting employee:', error);
+      toast.error('เกิดข้อผิดพลาดในการลบพนักงาน');
+    }
+  };
+
+  const handleResetRegistration = async (empId: string) => {
+    if (!confirm('คุณแน่ใจหรือไม่ที่จะรีเซ็ตการลงทะเบียน? พนักงานจะต้องลงทะเบียนและตั้งรหัสผ่านใหม่')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/${empId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          password: '', 
+          isRegistered: false 
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('รีเซ็ตการลงทะเบียนสำเร็จ');
+        await fetchEmployees();
+      } else {
+        toast.error('รีเซ็ตการลงทะเบียนไม่สำเร็จ');
+      }
+    } catch (error) {
+      console.error('Error resetting registration:', error);
+      toast.error('เกิดข้อผิดพลาดในการรีเซ็ต');
     }
   };
 
@@ -84,6 +113,7 @@ function AdminEmployeesContent() {
   };
 
   const handleSuccess = () => {
+    toast.success(selectedEmployee ? 'แก้ไขข้อมูลสำเร็จ' : 'เพิ่มพนักงานสำเร็จ');
     fetchEmployees();
     handleCloseForm();
   };
@@ -93,183 +123,154 @@ function AdminEmployeesContent() {
   const registeredCount = employees.filter(e => e.isRegistered).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/admin/dashboard')}
-                className="text-white/80 hover:text-white transition-colors"
-              >
-                ← กลับ
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold">จัดการพนักงาน</h1>
-                <p className="text-purple-100 mt-1">เพิ่ม แก้ไข และลบข้อมูลพนักงาน</p>
-              </div>
-            </div>
-            <button
-              onClick={() => { logout(); router.push('/login'); }}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>ออกจากระบบ</span>
-            </button>
+    <div className="space-y-6">
+      {/* Page Title & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">จัดการพนักงาน</h1>
+          <p className="text-gray-500 mt-1 uppercase text-xs font-bold tracking-widest">ข้อมูลและสิทธิ์การเข้าใช้งานของพนักงานทั้งหมด</p>
+        </div>
+        <Button 
+          onClick={() => setShowForm(true)}
+          className="bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-lg shadow-purple-200 transition-all active:scale-95"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          เพิ่มพนักงานใหม่
+        </Button>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">พนักงานทั้งหมด</p>
+          <p className="text-3xl font-black text-gray-900 mt-2">{employees.length}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ทั่วไป / แอดมิน</p>
+          <p className="text-3xl font-black text-gray-900 mt-2">{employeeCount} / {adminCount}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ลงทะเบียนแล้ว</p>
+          <p className="text-3xl font-black text-green-600 mt-2">{registeredCount}</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ยังไม่ลงทะเบียน</p>
+          <p className="text-3xl font-black text-orange-600 mt-2">{employees.length - registeredCount}</p>
+        </div>
+      </div>
+
+      {/* Employees Table Card */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+          <h2 className="text-xl font-black text-gray-900">รายชื่อพนักงาน</h2>
+          <div className="flex items-center space-x-2">
+            <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Live System</span>
           </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">พนักงานทั้งหมด</p>
-                <p className="text-3xl font-black text-blue-600">{employees.length}</p>
-              </div>
-              <Users className="w-8 h-8 text-blue-600" />
-            </div>
+        
+        {loading ? (
+          <div className="p-20 text-center">
+            <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-500 font-medium">กำลังโหลดข้อมูลพนักงาน...</p>
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">พนักงานทั่วไป</p>
-                <p className="text-3xl font-black text-green-600">{employeeCount}</p>
-              </div>
-              <Users className="w-8 h-8 text-green-600" />
-            </div>
+        ) : employees.length === 0 ? (
+          <div className="p-20 text-center">
+            <UsersIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+            <p className="text-gray-500 font-bold text-lg">ไม่พบข้อมูลพนักงานในระบบ</p>
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">ผู้ดูแลระบบ</p>
-                <p className="text-3xl font-black text-purple-600">{adminCount}</p>
-              </div>
-              <Users className="w-8 h-8 text-purple-600" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">ลงทะเบียนแล้ว</p>
-                <p className="text-3xl font-black text-orange-600">{registeredCount}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">รายชื่อพนักงาน</h2>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            เพิ่มพนักงาน
-          </Button>
-        </div>
-
-        {/* Employees Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500">กำลังโหลด...</p>
-            </div>
-          ) : employees.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500">ไม่มีข้อมูลพนักงาน</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Employee ID</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">ชื่อ-นามสกุล</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">บทบาท</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">โควตา (พักร้อน/ป่วย/กิจ)</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">สถานะ</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">การจัดการ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {employees.map((employee) => (
-                    <tr key={employee.empId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 font-mono text-sm text-gray-900">
-                        {employee.empId}
-                      </td>
-                      <td className="px-6 py-4 font-bold text-gray-900">
-                        {employee.name}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant={employee.role === 'admin' ? 'info' : 'default'}>
-                          {employee.role === 'admin' ? 'Admin' : 'Employee'}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex space-x-4">
-                          <span className="text-blue-600 font-bold">
-                            {employee.leaveQuota} <span className="text-[10px] text-gray-400">วัน</span>
-                          </span>
-                          <span className="text-green-600 font-bold">
-                            {employee.sickLeaveQuota} <span className="text-[10px] text-gray-400">วัน</span>
-                          </span>
-                          <span className="text-orange-600 font-bold">
-                            {employee.personalLeaveQuota} <span className="text-[10px] text-gray-400">วัน</span>
-                          </span>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50/50">
+                  <th className="px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest">Employee ID</th>
+                  <th className="px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest">ชื่อ-นามสกุล</th>
+                  <th className="px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest">บทบาท</th>
+                  <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาพักร้อน</th>
+                  <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาป่วย</th>
+                  <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลากิจ</th>
+                  <th className="px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest">สถานะ</th>
+                  <th className="px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-right">การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {employees.map((employee) => (
+                  <tr key={employee.empId} className="group hover:bg-gray-50/50 transition-colors">
+                    <td className="px-8 py-5 font-mono text-xs font-bold text-gray-400 group-hover:text-blue-600 transition-colors">
+                      {employee.empId}
+                    </td>
+                    <td className="px-8 py-5">
+                      <p className="font-black text-gray-900 text-base">{employee.name}</p>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider ${
+                        employee.role === 'admin' 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {employee.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-5 text-center">
+                      <span className="font-black text-blue-600 text-lg">{employee.leaveQuota}</span>
+                    </td>
+                    <td className="px-4 py-5 text-center">
+                      <span className="font-black text-green-600 text-lg">{employee.sickLeaveQuota}</span>
+                    </td>
+                    <td className="px-4 py-5 text-center">
+                      <span className="font-black text-orange-600 text-lg">{employee.personalLeaveQuota}</span>
+                    </td>
+                    <td className="px-8 py-5">
+                      {employee.isRegistered ? (
+                        <div className="flex items-center text-green-600 space-x-1.5">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wide">ลงทะเบียนแล้ว</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {employee.isRegistered ? (
-                          <Badge variant="success">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            ลงทะเบียนแล้ว
-                          </Badge>
-                        ) : (
-                          <Badge variant="warning">
-                            <XCircle className="w-3 h-3 mr-1" />
-                            ยังไม่ลงทะเบียน
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(employee)}
+                      ) : (
+                        <div className="flex items-center text-orange-500 space-x-1.5">
+                          <XCircle className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase tracking-wide">รอลงทะเบียน</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center justify-end space-x-3">
+                        <button
+                          onClick={() => handleEdit(employee)}
+                          className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 border border-blue-100 rounded-lg transition-all text-xs font-black"
+                        >
+                          แก้ไข
+                        </button>
+                        
+                        {employee.isRegistered && (
+                          <button
+                            onClick={() => handleResetRegistration(employee.empId)}
+                            className="px-3 py-1.5 text-orange-600 hover:bg-orange-50 border border-orange-100 rounded-lg transition-all text-xs font-black"
                           >
-                            <Edit className="w-3 h-3 mr-1" />
-                            แก้ไข
-                          </Button>
-                          {employee.empId !== 'ADMIN001' && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(employee.empId)}
-                            >
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              ลบ
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </main>
+                            รีเซ็ตรหัส
+                          </button>
+                        )}
+ 
+                        {employee.empId !== 'ADMIN001' && (
+                          <button
+                            onClick={() => handleDelete(employee.empId)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                            title="ลบพนักงาน"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-      {/* Employee Form Dialog */}
       <EmployeeFormDialog
         open={showForm}
         onClose={handleCloseForm}
@@ -277,5 +278,19 @@ function AdminEmployeesContent() {
         employee={selectedEmployee}
       />
     </div>
+  );
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      className={className} 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor" 
+      strokeWidth={1.5}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
   );
 }

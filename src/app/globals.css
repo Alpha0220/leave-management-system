@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", "Sarabun", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-sarabun), "Sarabun", sans-serif;
+  --font-mono: var(--font-sarabun), "Sarabun", monospace;
 }
 
 :root {
@@ -9,10 +10,13 @@
   --foreground: #111827;
 }
 
+* {
+  font-family: var(--font-sarabun), "Sarabun", sans-serif !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
 }
 
 @layer base {

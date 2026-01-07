@@ -21,7 +21,10 @@ export async function getAllLeaves(): Promise<LeaveRequest[]> {
     return [];
   }
 
-  return rows.slice(1).map(rowToLeave);
+  // Skip header row and filter out empty rows
+  return rows.slice(1)
+    .filter(row => row && row[0] && String(row[0]).trim() !== '')
+    .map(rowToLeave);
 }
 
 /**

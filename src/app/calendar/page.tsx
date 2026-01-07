@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
-import { useAuth } from '@/contexts/auth.context';
-import { useRouter } from 'next/navigation';
-import { LogOut, Calendar as CalendarIcon } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { LeaveCalendar } from '@/components/features/leave-calendar';
 
 interface Leave {
@@ -32,8 +30,6 @@ export default function CalendarPage() {
 }
 
 function CalendarContent() {
-  const { logout } = useAuth();
-  const router = useRouter();
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,22 +41,16 @@ function CalendarContent() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch all leaves
-      const leavesRes = await fetch('/api/leaves');
+      const [leavesRes, usersRes] = await Promise.all([
+        fetch('/api/leaves'),
+        fetch('/api/users'),
+      ]);
+
       const leavesData = await leavesRes.json();
-      
-      // Fetch all users
-      const usersRes = await fetch('/api/users');
       const usersData = await usersRes.json();
 
-      if (leavesData.success) {
-        setLeaves(leavesData.leaves || []);
-      }
-      
-      if (usersData.success) {
-        setUsers(usersData.users || []);
-      }
+      if (leavesData.success) setLeaves(leavesData.leaves || []);
+      if (usersData.success) setUsers(usersData.users || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -73,57 +63,58 @@ function CalendarContent() {
     return user?.name || empId;
   };
 
-  // Add employee names to leaves
   const leavesWithNames = leaves.map(leave => ({
     ...leave,
     employeeName: getUserName(leave.empId),
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                ← กลับ
-              </button>
-              <div className="flex items-center space-x-3">
-                <CalendarIcon className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">ปฏิทินการลา</h1>
-                  <p className="text-sm text-gray-600">ดูวันลาของทีม</p>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => { logout(); router.push('/login'); }}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>ออกจากระบบ</span>
-            </button>
-          </div>
+    <div className="space-y-8">
+      {/* Page Title */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">ปฏิทินการลา</h1>
+          <p className="text-gray-500 mt-1 uppercase text-xs font-bold tracking-widest">ตรวจสอบวันหยุดและตารางการลาของพนักงานทั้งทีม</p>
         </div>
-      </header>
+        <div className="hidden md:flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-2xl border border-blue-100">
+          <Info className="w-4 h-4 text-blue-600" />
+          <span className="text-xs font-bold text-blue-800 uppercase tracking-wide">Team View Only</span>
+        </div>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Calendar Card */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-600">กำลังโหลด...</p>
-            </div>
+          <div className="p-24 text-center">
+            <div className="inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-500 font-bold">กำลังประมวลผลข้อมูลปฏิทิน...</p>
           </div>
         ) : (
-          <LeaveCalendar leaves={leavesWithNames} />
+          <div className="p-4 sm:p-8">
+            <LeaveCalendar leaves={leavesWithNames} />
+          </div>
         )}
-      </main>
+      </div>
+
+      {/* Legend Card */}
+      <div className="bg-gray-50 rounded-2xl p-6 flex flex-wrap items-center justify-center gap-6 border border-gray-100">
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">ลาพักร้อน</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">ลาป่วย</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">ลากิจ</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">รอยืนยัน</span>
+        </div>
+      </div>
     </div>
   );
 }

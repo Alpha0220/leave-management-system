@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuth } from '@/contexts/auth.context';
-import { useRouter } from 'next/navigation';
-import { LogOut, FileText, Plus } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 import { LeaveHistoryTable } from '@/components/features/leave-history-table';
 import { LeaveRequestForm } from '@/components/features/leave-request-form';
 import { Button } from '@/components/ui/button';
@@ -18,68 +17,42 @@ export default function LeaveHistoryPage() {
 }
 
 function LeaveHistoryContent() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
 
   const handleSuccess = () => {
     setRefreshKey(prev => prev + 1); // Trigger refresh
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                ← กลับ
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">ประวัติการลา</h1>
-                <p className="text-sm text-gray-600">{user?.name}</p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>ออกจากระบบ</span>
-            </button>
-          </div>
+    <div className="space-y-8">
+      {/* Page Title & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">ประวัติการลา</h1>
+          <p className="text-gray-500 mt-1 uppercase text-xs font-bold tracking-widest">{user?.name} | Employee Portal</p>
         </div>
-      </header>
+        <Button 
+          onClick={() => setShowLeaveForm(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-100 px-8 py-6"
+        >
+          <Plus className="w-6 h-6 mr-2" />
+          ยื่นคำขอลาใหม่
+        </Button>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Action Bar */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <FileText className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-bold text-gray-900">
-              ประวัติการลาทั้งหมด
-            </h2>
-          </div>
-          <Button onClick={() => setShowLeaveForm(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            ยื่นคำขอลา
-          </Button>
+      {/* Main Table Card */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-8 py-6 border-b border-gray-50 flex items-center space-x-3">
+          <FileText className="w-6 h-6 text-blue-600" />
+          <h2 className="text-xl font-black text-gray-900">รายการคำขอลาทั้งหมด</h2>
         </div>
-
-        {/* Leave History Table */}
-        <LeaveHistoryTable key={refreshKey} />
-      </main>
+        
+        <div className="p-2 sm:p-4">
+          <LeaveHistoryTable key={refreshKey} />
+        </div>
+      </div>
 
       {/* Leave Request Form Modal */}
       <LeaveRequestForm
