@@ -25,7 +25,8 @@ function DashboardContent() {
   // Refresh user data when dashboard loads
   useEffect(() => {
     refreshUser();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   const handleSuccess = () => {
     toast.success('ส่งคำขอลาสำเร็จ!');

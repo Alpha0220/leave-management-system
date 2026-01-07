@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { Settings as SettingsIcon, Save, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,28 @@ function AdminSettingsContent() {
     defaultPersonalLeave: 6,
   });
 
+  // Load settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        const data = await response.json();
+
+        if (data.success && data.settings) {
+          setSettings({
+            defaultAnnualLeave: data.settings.annualLeaveMax || 10,
+            defaultSickLeave: data.settings.sickLeaveMax || 30,
+            defaultPersonalLeave: data.settings.personalLeaveMax || 6,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -34,8 +56,12 @@ function AdminSettingsContent() {
         body: JSON.stringify(settings),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (data.success) {
         toast.success('บันทึกการตั้งค่าสำเร็จ');
+      } else {
+        toast.error(data.error || 'เกิดข้อผิดพลาดในการบันทึก');
       }
     } catch (error) {
       console.error('Error saving settings:', error);

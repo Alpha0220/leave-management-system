@@ -35,29 +35,53 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
 
   const isEditMode = !!employee;
 
-  // Sync form data when employee prop changes or dialog opens
+  // Fetch default settings when dialog opens for new employee
   useEffect(() => {
-    if (open) {
-      if (employee) {
-        setFormData({
-          empId: employee.empId || '',
-          name: employee.name || '',
-          role: employee.role || 'employee',
-          leaveQuota: employee.leaveQuota ?? 10,
-          sickLeaveQuota: employee.sickLeaveQuota ?? 30,
-          personalLeaveQuota: employee.personalLeaveQuota ?? 6,
-        });
-      } else {
-        // Reset form for new employee
-        setFormData({
-          empId: '',
-          name: '',
-          role: 'employee',
-          leaveQuota: 10,
-          sickLeaveQuota: 30,
-          personalLeaveQuota: 6,
-        });
+    const fetchDefaultSettings = async () => {
+      if (open && !employee) {
+        try {
+          const response = await fetch('/api/settings');
+          const data = await response.json();
+
+          if (data.success && data.settings) {
+            setFormData({
+              empId: '',
+              name: '',
+              role: 'employee',
+              leaveQuota: data.settings.annualLeaveMax || 10,
+              sickLeaveQuota: data.settings.sickLeaveMax || 30,
+              personalLeaveQuota: data.settings.personalLeaveMax || 6,
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching default settings:', error);
+          // Fallback to hardcoded defaults
+          setFormData({
+            empId: '',
+            name: '',
+            role: 'employee',
+            leaveQuota: 10,
+            sickLeaveQuota: 30,
+            personalLeaveQuota: 6,
+          });
+        }
       }
+    };
+
+    fetchDefaultSettings();
+  }, [open, employee]);
+
+  // Sync form data when employee prop changes (edit mode)
+  useEffect(() => {
+    if (open && employee) {
+      setFormData({
+        empId: employee.empId || '',
+        name: employee.name || '',
+        role: employee.role || 'employee',
+        leaveQuota: employee.leaveQuota ?? 10,
+        sickLeaveQuota: employee.sickLeaveQuota ?? 30,
+        personalLeaveQuota: employee.personalLeaveQuota ?? 6,
+      });
       setError(null);
     }
   }, [open, employee]);

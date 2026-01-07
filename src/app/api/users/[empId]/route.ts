@@ -24,8 +24,9 @@ export async function GET(
       );
     }
 
-    // Remove password from response
-    const { password: _password, ...userWithoutPassword } = user;
+    // Return user without password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
 
     return NextResponse.json({
       success: true,
