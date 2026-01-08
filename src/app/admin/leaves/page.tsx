@@ -11,7 +11,7 @@ import { LeaveDetailsDialog } from '@/components/features/leave-details-dialog';
 interface LeaveRequest {
   id: string;
   empId: string;
-  type: 'annual' | 'sick' | 'personal';
+  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid';
   startDate: string;
   endDate: string;
   totalDays: number;
@@ -30,6 +30,9 @@ const LEAVE_TYPE_LABELS = {
   annual: 'ลาพักร้อน',
   sick: 'ลาป่วย',
   personal: 'ลากิจ',
+  maternity: 'ลาคลอด',
+  sterilization: 'ลาทำหมัน',
+  unpaid: 'ลาไม่รับค่าจ้าง',
 };
 
 export default function AdminLeavesPage() {
@@ -285,7 +288,11 @@ function AdminLeavesContent() {
                     <td className="px-8 py-5 whitespace-nowrap">
                       <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider ${
                         leave.type === 'annual' ? 'bg-blue-100 text-blue-700' :
-                        leave.type === 'sick' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                        leave.type === 'sick' ? 'bg-green-100 text-green-700' :
+                        leave.type === 'personal' ? 'bg-orange-100 text-orange-700' :
+                        leave.type === 'maternity' ? 'bg-pink-100 text-pink-700' :
+                        leave.type === 'sterilization' ? 'bg-purple-100 text-purple-700' :
+                        'bg-teal-100 text-teal-700'
                       }`}>
                         {LEAVE_TYPE_LABELS[leave.type]}
                       </span>

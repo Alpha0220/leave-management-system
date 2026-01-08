@@ -21,7 +21,7 @@ export function LeaveRequestForm({ open, onClose, onSuccess }: LeaveRequestFormP
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    type: 'annual' as 'annual' | 'sick' | 'personal',
+    type: 'annual' as 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid',
     startDate: '',
     endDate: '',
     reason: '',
@@ -87,6 +87,12 @@ export function LeaveRequestForm({ open, onClose, onSuccess }: LeaveRequestFormP
         return user.sickLeaveQuota;
       case 'personal':
         return user.personalLeaveQuota;
+      case 'maternity':
+        return user.maternityLeaveQuota;
+      case 'sterilization':
+        return user.sterilizationLeaveQuota;
+      case 'unpaid':
+        return user.unpaidLeaveQuota;
       default:
         return 0;
     }
@@ -111,11 +117,14 @@ export function LeaveRequestForm({ open, onClose, onSuccess }: LeaveRequestFormP
           label="ประเภทการลา"
           required
           value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value as 'annual' | 'sick' | 'personal' })}
+          onChange={(e) => setFormData({ ...formData, type: e.target.value as 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid' })}
           options={[
             { value: 'annual', label: 'ลาพักร้อน' },
             { value: 'sick', label: 'ลาป่วย' },
             { value: 'personal', label: 'ลากิจ' },
+            { value: 'maternity', label: 'ลาคลอด' },
+            { value: 'sterilization', label: 'ลาทำหมัน' },
+            { value: 'unpaid', label: 'ลาไม่รับค่าจ้าง' },
           ]}
         />
 

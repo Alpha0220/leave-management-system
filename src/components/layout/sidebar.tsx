@@ -41,7 +41,7 @@ export function Sidebar({ collapsed, onToggle, mobile }: SidebarProps) {
   const isAdmin = user?.role === 'admin';
 
   const employeeLinks: NavLink[] = [
-    { name: 'แดชบอร์ด', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'หน้าหลัก', href: '/dashboard', icon: LayoutDashboard },
     { name: 'ปฏิทินการลา', href: '/calendar', icon: Calendar },
     { name: 'ประวัติการลา', href: '/leave/history', icon: History },
   ];
@@ -62,16 +62,37 @@ export function Sidebar({ collapsed, onToggle, mobile }: SidebarProps) {
         ${mobile ? 'w-64' : (collapsed ? 'w-20' : 'w-64')}
       `}
     >
-      {!mobile && (
-        <div className="flex justify-end p-4 border-b border-gray-100">
+      {/* Header with Logo/Brand */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        {!collapsed && !mobile && (
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-linear-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+              <CalendarIcon className="w-5 h-5" />
+            </div>
+            <span className="text-xl font-black bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-600">
+              LEAVE MS
+            </span>
+          </div>
+        )}
+        {mobile && (
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-linear-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+              <CalendarIcon className="w-5 h-5" />
+            </div>
+            <span className="text-xl font-black bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-600">
+              LEAVE MS
+            </span>
+          </div>
+        )}
+        {!mobile && (
           <button
             onClick={onToggle}
             className="p-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors border border-gray-200"
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-3 space-y-2">
         {links.map((link, index) => {
@@ -130,5 +151,19 @@ export function Sidebar({ collapsed, onToggle, mobile }: SidebarProps) {
         })}
       </div>
     </aside>
+  );
+}
+
+function CalendarIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      className={className} 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor" 
+      strokeWidth={2.5}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
   );
 }

@@ -7,9 +7,10 @@ import { LogOut, User, Bell, Menu } from 'lucide-react';
 
 interface NavbarProps {
   onMenuClick?: () => void;
+  pageTitle?: string;
 }
 
-export function Navbar({ onMenuClick }: NavbarProps) {
+export function Navbar({ onMenuClick, pageTitle }: NavbarProps) {
   const { user, logout } = useAuth();
   const toast = useToast();
   const router = useRouter();
@@ -31,14 +32,9 @@ export function Navbar({ onMenuClick }: NavbarProps) {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-linear-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm">
-                <CalendarIcon className="w-5 h-5" />
-              </div>
-              <span className="text-xl font-black bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-600 hidden sm:block">
-                LEAVE MS
-              </span>
-            </div>
+            {pageTitle && (
+              <h1 className="text-xl font-black text-gray-900">{pageTitle}</h1>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -67,19 +63,5 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         </div>
       </div>
     </nav>
-  );
-}
-
-function CalendarIcon({ className }: { className?: string }) {
-  return (
-    <svg 
-      className={className} 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      stroke="currentColor" 
-      strokeWidth={2.5}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
   );
 }

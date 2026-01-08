@@ -19,6 +19,20 @@ export function MainLayout({ children }: MainLayoutProps) {
   // Check if current page is login or register
   const isAuthPage = pathname === '/login' || pathname === '/register';
 
+  // Get page title based on pathname
+  const getPageTitle = () => {
+    const titles: Record<string, string> = {
+      '/dashboard': 'หน้าหลัก',
+      '/calendar': 'ปฏิทินการลา',
+      '/leave/history': 'ประวัติการลา',
+      '/admin/dashboard': 'Admin Dashboard',
+      '/admin/leaves': 'อนุมัติคำขอลา',
+      '/admin/employees': 'จัดการพนักงาน',
+      '/admin/settings': 'ตั้งค่าระบบ',
+    };
+    return titles[pathname] || '';
+  };
+
   // If it's an auth page, render only the children without layout components
   if (isAuthPage) {
     return <>{children}</>;
@@ -27,7 +41,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* Navbar always at top */}
-      <Navbar onMenuClick={() => setMobileMenuOpen(true)} />
+      <Navbar onMenuClick={() => setMobileMenuOpen(true)} pageTitle={getPageTitle()} />
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Mobile Sidebar Backdrop */}

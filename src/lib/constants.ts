@@ -12,7 +12,10 @@ export const SHEET_NAMES = {
 export const DEFAULT_QUOTAS = {
   ANNUAL_LEAVE: 2,
   SICK_LEAVE: 2,
-  PERSONAL_LEAVE: 2
+  PERSONAL_LEAVE: 2,
+  MATERNITY_LEAVE: 120,
+  STERILIZATION_LEAVE: 999, // Unlimited (using large number)
+  UNPAID_LEAVE: 999 // Unlimited (using large number)
 } as const;
 
 export const DEFAULT_ADMIN = {
@@ -23,6 +26,9 @@ export const DEFAULT_ADMIN = {
   leaveQuota: 0,
   sickLeaveQuota: 0,
   personalLeaveQuota: 0,
+  maternityLeaveQuota: 0,
+  sterilizationLeaveQuota: 0,
+  unpaidLeaveQuota: 0,
   isRegistered: true
 } as const;
 
