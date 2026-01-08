@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { Navbar } from './navbar';
 import { Sidebar } from './sidebar';
 import { Footer } from './footer';
@@ -13,8 +14,15 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
-  // Removed isAuthenticated check to show layout on every page as requested
+  // Check if current page is login or register
+  const isAuthPage = pathname === '/login' || pathname === '/register';
+
+  // If it's an auth page, render only the children without layout components
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">

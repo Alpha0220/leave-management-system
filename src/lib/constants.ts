@@ -10,9 +10,9 @@ export const SHEET_NAMES = {
 } as const;
 
 export const DEFAULT_QUOTAS = {
-  ANNUAL_LEAVE: 10,
-  SICK_LEAVE: 30,
-  PERSONAL_LEAVE: 6
+  ANNUAL_LEAVE: 2,
+  SICK_LEAVE: 2,
+  PERSONAL_LEAVE: 2
 } as const;
 
 export const DEFAULT_ADMIN = {
