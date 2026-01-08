@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           maternityLeaveQuota: data.user.maternityLeaveQuota,
           sterilizationLeaveQuota: data.user.sterilizationLeaveQuota,
           unpaidLeaveQuota: data.user.unpaidLeaveQuota,
+          compassionateLeaveQuota: data.user.compassionateLeaveQuota,
         };
         setUser(updatedUser);
       }

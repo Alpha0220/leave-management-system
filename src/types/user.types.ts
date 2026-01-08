@@ -15,6 +15,7 @@ export interface User {
   maternityLeaveQuota: number;
   sterilizationLeaveQuota: number;
   unpaidLeaveQuota: number;
+  compassionateLeaveQuota: number;
   isRegistered: boolean;
   createdAt: string;
 }
@@ -35,6 +36,7 @@ export interface UserCreateInput {
   maternityLeaveQuota?: number;
   sterilizationLeaveQuota?: number;
   unpaidLeaveQuota?: number;
+  compassionateLeaveQuota?: number;
 }
 
 export interface UserUpdateInput {
@@ -47,5 +49,6 @@ export interface UserUpdateInput {
   maternityLeaveQuota?: number;
   sterilizationLeaveQuota?: number;
   unpaidLeaveQuota?: number;
+  compassionateLeaveQuota?: number;
   isRegistered?: boolean;
 }

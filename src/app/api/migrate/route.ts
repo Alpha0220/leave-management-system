@@ -123,17 +123,13 @@ export async function POST(request: Request) {
   }
 }
 
-// Also support GET for simple initialization
+// Support GET for database schema migration
 export async function GET() {
   try {
-    console.log('🔄 Initializing Google Sheets...');
-    await initializeSheets();
+    const { runMigration } = await import('@/services/sheets-setup.service');
+    const result = await runMigration();
     
-    return NextResponse.json({
-      success: true,
-      message: 'Google Sheets initialized successfully!',
-      info: 'Use POST /api/migrate with {users, leaves} to migrate data'
-    });
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({
       success: false,

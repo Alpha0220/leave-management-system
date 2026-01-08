@@ -58,6 +58,10 @@ export async function PATCH(
       leaveQuota, 
       sickLeaveQuota, 
       personalLeaveQuota,
+      maternityLeaveQuota,
+      sterilizationLeaveQuota,
+      unpaidLeaveQuota,
+      compassionateLeaveQuota,
       password,
       isRegistered
     } = body;
@@ -69,6 +73,10 @@ export async function PATCH(
     if (leaveQuota !== undefined) updates.leaveQuota = leaveQuota;
     if (sickLeaveQuota !== undefined) updates.sickLeaveQuota = sickLeaveQuota;
     if (personalLeaveQuota !== undefined) updates.personalLeaveQuota = personalLeaveQuota;
+    if (maternityLeaveQuota !== undefined) updates.maternityLeaveQuota = maternityLeaveQuota;
+    if (sterilizationLeaveQuota !== undefined) updates.sterilizationLeaveQuota = sterilizationLeaveQuota;
+    if (unpaidLeaveQuota !== undefined) updates.unpaidLeaveQuota = unpaidLeaveQuota;
+    if (compassionateLeaveQuota !== undefined) updates.compassionateLeaveQuota = compassionateLeaveQuota;
     if (password !== undefined) updates.password = password;
     if (isRegistered !== undefined) updates.isRegistered = isRegistered;
 

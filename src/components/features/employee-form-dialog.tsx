@@ -21,6 +21,7 @@ interface EmployeeFormDialogProps {
     maternityLeaveQuota: number;
     sterilizationLeaveQuota: number;
     unpaidLeaveQuota: number;
+    compassionateLeaveQuota: number;
   } | null;
 }
 
@@ -37,6 +38,7 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
     maternityLeaveQuota: 120,
     sterilizationLeaveQuota: 999,
     unpaidLeaveQuota: 999,
+    compassionateLeaveQuota: 3,
   });
 
   const isEditMode = !!employee;
@@ -57,9 +59,10 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
               leaveQuota: data.settings.annualLeaveMax || 10,
               sickLeaveQuota: data.settings.sickLeaveMax || 30,
               personalLeaveQuota: data.settings.personalLeaveMax || 6,
-              maternityLeaveQuota: 120,
-              sterilizationLeaveQuota: 999,
-              unpaidLeaveQuota: 999,
+              maternityLeaveQuota: data.settings.maternityLeaveMax || 120,
+              sterilizationLeaveQuota: data.settings.sterilizationLeaveMax || 999,
+              unpaidLeaveQuota: data.settings.unpaidLeaveMax || 999,
+              compassionateLeaveQuota: data.settings.compassionateLeaveMax || 3,
             });
           }
         } catch (error) {
@@ -75,6 +78,7 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
             maternityLeaveQuota: 120,
             sterilizationLeaveQuota: 999,
             unpaidLeaveQuota: 999,
+            compassionateLeaveQuota: 3,
           });
         }
       }
@@ -96,6 +100,7 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
         maternityLeaveQuota: employee.maternityLeaveQuota ?? 120,
         sterilizationLeaveQuota: employee.sterilizationLeaveQuota ?? 999,
         unpaidLeaveQuota: employee.unpaidLeaveQuota ?? 999,
+        compassionateLeaveQuota: employee.compassionateLeaveQuota ?? 3,
       });
       setError(null);
     }
@@ -244,6 +249,16 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
               value={formData.unpaidLeaveQuota}
               onChange={(e) => setFormData({ ...formData, unpaidLeaveQuota: parseInt(e.target.value) || 0 })}
               helperText="วัน (999=ไม่จำกัด)"
+            />
+
+            <Input
+              type="number"
+              label="ลาฌาปนกิจ"
+              required
+              min={0}
+              value={formData.compassionateLeaveQuota}
+              onChange={(e) => setFormData({ ...formData, compassionateLeaveQuota: parseInt(e.target.value) || 0 })}
+              helperText="วัน"
             />
           </div>
         </div>

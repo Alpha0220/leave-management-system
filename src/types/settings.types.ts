@@ -17,6 +17,10 @@ export interface PolicySettings {
   annualLeaveMax: number;
   sickLeaveMax: number;
   personalLeaveMax: number;
+  maternityLeaveMax: number;
+  sterilizationLeaveMax: number;
+  unpaidLeaveMax: number;
+  compassionateLeaveMax: number;
   minAdvanceNoticeDays: number;
   carryOverEnabled: boolean;
   carryOverMaxDays: number;

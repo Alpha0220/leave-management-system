@@ -23,6 +23,10 @@ function AdminSettingsContent() {
     defaultAnnualLeave: 10,
     defaultSickLeave: 30,
     defaultPersonalLeave: 6,
+    defaultMaternityLeave: 120,
+    defaultSterilizationLeave: 999,
+    defaultUnpaidLeave: 999,
+    defaultCompassionateLeave: 3,
   });
 
   // Load settings on mount
@@ -37,6 +41,10 @@ function AdminSettingsContent() {
             defaultAnnualLeave: data.settings.annualLeaveMax || 10,
             defaultSickLeave: data.settings.sickLeaveMax || 30,
             defaultPersonalLeave: data.settings.personalLeaveMax || 6,
+            defaultMaternityLeave: data.settings.maternityLeaveMax || 120,
+            defaultSterilizationLeave: data.settings.sterilizationLeaveMax || 999,
+            defaultUnpaidLeave: data.settings.unpaidLeaveMax || 999,
+            defaultCompassionateLeave: data.settings.compassionateLeaveMax || 3,
           });
         }
       } catch (error) {
@@ -134,6 +142,50 @@ function AdminSettingsContent() {
                   min={0}
                   value={settings.defaultPersonalLeave}
                   onChange={(e) => setSettings({ ...settings, defaultPersonalLeave: parseInt(e.target.value) || 0 })}
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลาคลอด (วัน/ปี)</p>
+                <Input
+                  type="number"
+                  min={0}
+                  value={settings.defaultMaternityLeave}
+                  onChange={(e) => setSettings({ ...settings, defaultMaternityLeave: parseInt(e.target.value) || 0 })}
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลาทำหมัน (วัน/ปี)</p>
+                <Input
+                  type="number"
+                  min={0}
+                  value={settings.defaultSterilizationLeave}
+                  onChange={(e) => setSettings({ ...settings, defaultSterilizationLeave: parseInt(e.target.value) || 0 })}
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลาไม่รับค่าจ้าง (วัน/ปี)</p>
+                <Input
+                  type="number"
+                  min={0}
+                  value={settings.defaultUnpaidLeave}
+                  onChange={(e) => setSettings({ ...settings, defaultUnpaidLeave: parseInt(e.target.value) || 0 })}
+                  className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">ลาฌาปนกิจ (วัน/ปี)</p>
+                <Input
+                  type="number"
+                  min={0}
+                  value={settings.defaultCompassionateLeave}
+                  onChange={(e) => setSettings({ ...settings, defaultCompassionateLeave: parseInt(e.target.value) || 0 })}
                   className="border-2 focus:border-green-500 rounded-xl h-12 text-lg font-bold"
                 />
               </div>

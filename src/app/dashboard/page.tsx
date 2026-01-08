@@ -133,11 +133,12 @@ function DashboardContent() {
                 { title: 'ลาคลอด', quota: user?.maternityLeaveQuota || 0, used: 0 },
                 { title: 'ลาทำหมัน', quota: user?.sterilizationLeaveQuota || 0, used: 0 },
                 { title: 'ลาไม่รับค่าจ้าง', quota: user?.unpaidLeaveQuota || 0, used: 0 },
+                { title: 'ลาฌาปนกิจ', quota: user?.compassionateLeaveQuota || 0, used: 0 },
               ].map((item) => (
                 <tr key={item.title} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900">{item.title}</td>
                   <td className="px-6 py-4 text-right font-bold text-gray-900">
-                    {item.quota}/{item.used}
+                    {item.quota < 999 ? item.quota : 'ไม่จำกัด'}
                   </td>
                 </tr>
               ))}

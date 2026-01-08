@@ -11,7 +11,7 @@ import { LeaveDetailsDialog } from '@/components/features/leave-details-dialog';
 interface LeaveRequest {
   id: string;
   empId: string;
-  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid';
+  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid' | 'compassionate';
   startDate: string;
   endDate: string;
   totalDays: number;
@@ -33,6 +33,7 @@ const LEAVE_TYPE_LABELS = {
   maternity: 'ลาคลอด',
   sterilization: 'ลาทำหมัน',
   unpaid: 'ลาไม่รับค่าจ้าง',
+  compassionate: 'ลาฌาปนกิจ',
 };
 
 export default function AdminLeavesPage() {
@@ -264,40 +265,41 @@ function AdminLeavesContent() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/50">
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">id</th>
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">ชื่อ</th>
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">ประเภท</th>
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">ระยะเวลา</th>
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">เหตุผล</th>
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">สถานะ</th>
-                  <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none text-right">ดำเนินการ</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">id</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">ชื่อ</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">ประเภท</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">ระยะเวลา</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">เหตุผล</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none">สถานะ</th>
+                  <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none text-right">ดำเนินการ</th>
                   {filter !== 'pending' && (
-                    <th className="px-8 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none text-right">รายละเอียด</th>
+                    <th className="px-5 py-5 text-sm font-black text-gray-900 uppercase tracking-widest leading-none text-right">รายละเอียด</th>
                   )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filteredLeaves.map((leave) => (
                   <tr key={leave.id} className="group hover:bg-gray-50/50 transition-colors">
-                    <td className="px-8 py-5 whitespace-nowrap">
+                    <td className="px-5 py-5 whitespace-nowrap">
                       <span className="font-black text-gray-900 text-base">{leave.empId}</span>
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap">
+                    <td className="px-5 py-5 whitespace-nowrap">
                       <span className="font-bold text-gray-600 text-base">{getUserName(leave.empId)}</span>
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap">
+                    <td className="px-5 py-5 whitespace-nowrap">
                       <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider ${
                         leave.type === 'annual' ? 'bg-blue-100 text-blue-700' :
                         leave.type === 'sick' ? 'bg-green-100 text-green-700' :
                         leave.type === 'personal' ? 'bg-orange-100 text-orange-700' :
                         leave.type === 'maternity' ? 'bg-pink-100 text-pink-700' :
                         leave.type === 'sterilization' ? 'bg-purple-100 text-purple-700' :
-                        'bg-teal-100 text-teal-700'
+                        leave.type === 'unpaid' ? 'bg-teal-100 text-teal-700' :
+                        'bg-indigo-100 text-indigo-700'
                       }`}>
                         {LEAVE_TYPE_LABELS[leave.type]}
                       </span>
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap">
+                    <td className="px-5 py-5 whitespace-nowrap">
                       <div className="flex flex-col justify-center">
                         <p className="font-black text-gray-900 text-base leading-none">{leave.totalDays} วัน</p>
                         <p className="text-[10px] font-bold text-gray-400 mt-1.5">
@@ -305,12 +307,12 @@ function AdminLeavesContent() {
                         </p>
                       </div>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-5 py-5">
                       <p className="text-sm font-bold text-gray-600 max-w-[200px] truncate" title={leave.reason}>
                         {leave.reason}
                       </p>
                     </td>
-                    <td className="px-8 py-5 whitespace-nowrap">
+                    <td className="px-5 py-5 whitespace-nowrap">
                       <Badge
                         variant={
                           leave.status === 'pending' ? 'warning' :
@@ -322,7 +324,7 @@ function AdminLeavesContent() {
                          leave.status === 'approved' ? 'Approved' : 'Rejected'}
                       </Badge>
                     </td>
-                    <td className="px-8 py-5 text-right whitespace-nowrap">
+                    <td className="px-5 py-5 text-right whitespace-nowrap">
                       {leave.status === 'pending' ? (
                         <Button
                           onClick={() => setSelectedLeave({
@@ -339,7 +341,7 @@ function AdminLeavesContent() {
                       )}
                     </td>
                     {filter !== 'pending' && (
-                      <td className="px-8 py-5 text-right whitespace-nowrap">
+                      <td className="px-5 py-5 text-right whitespace-nowrap">
                         {leave.status !== 'pending' ? (
                           <Button
                             onClick={() => setViewingLeave({

@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getPolicySettings, updateSetting } from '@/services/settings.service';
+import { getPolicySettings } from '@/services/settings.service';
 
 export async function GET() {
   try {
@@ -32,13 +32,28 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { defaultAnnualLeave, defaultSickLeave, defaultPersonalLeave } = body;
+    const { 
+      defaultAnnualLeave, 
+      defaultSickLeave, 
+      defaultPersonalLeave,
+      defaultMaternityLeave,
+      defaultSterilizationLeave,
+      defaultUnpaidLeave,
+      defaultCompassionateLeave
+    } = body;
     const currentYear = new Date().getFullYear();
 
-    // Update each setting
-    await updateSetting('annualLeaveMax', String(defaultAnnualLeave || 10), currentYear);
-    await updateSetting('sickLeaveMax', String(defaultSickLeave || 30), currentYear);
-    await updateSetting('personalLeaveMax', String(defaultPersonalLeave || 6), currentYear);
+    // Update all settings at once
+    const { updateSettings } = await import('@/services/settings.service');
+    await updateSettings([
+      { key: 'annualLeaveMax', value: String(defaultAnnualLeave ?? 10) },
+      { key: 'sickLeaveMax', value: String(defaultSickLeave ?? 30) },
+      { key: 'personalLeaveMax', value: String(defaultPersonalLeave ?? 6) },
+      { key: 'maternityLeaveMax', value: String(defaultMaternityLeave ?? 120) },
+      { key: 'sterilizationLeaveMax', value: String(defaultSterilizationLeave ?? 999) },
+      { key: 'unpaidLeaveMax', value: String(defaultUnpaidLeave ?? 999) },
+      { key: 'compassionateLeaveMax', value: String(defaultCompassionateLeave ?? 3) },
+    ], currentYear);
 
     return NextResponse.json({
       success: true,

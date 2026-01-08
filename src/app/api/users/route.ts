@@ -20,6 +20,10 @@ export async function GET() {
       leaveQuota: user.leaveQuota,
       sickLeaveQuota: user.sickLeaveQuota,
       personalLeaveQuota: user.personalLeaveQuota,
+      maternityLeaveQuota: user.maternityLeaveQuota,
+      sterilizationLeaveQuota: user.sterilizationLeaveQuota,
+      unpaidLeaveQuota: user.unpaidLeaveQuota,
+      compassionateLeaveQuota: user.compassionateLeaveQuota,
     }));
 
     return NextResponse.json({
@@ -42,7 +46,18 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { empId, name, role, leaveQuota, sickLeaveQuota, personalLeaveQuota } = body;
+    const { 
+      empId, 
+      name, 
+      role, 
+      leaveQuota, 
+      sickLeaveQuota, 
+      personalLeaveQuota,
+      maternityLeaveQuota,
+      sterilizationLeaveQuota,
+      unpaidLeaveQuota,
+      compassionateLeaveQuota
+    } = body;
 
     // Validate input
     if (!empId || !name || !role) {
@@ -57,9 +72,13 @@ export async function POST(request: Request) {
       empId,
       name,
       role,
-      leaveQuota: leaveQuota || 10,
-      sickLeaveQuota: sickLeaveQuota || 30,
-      personalLeaveQuota: personalLeaveQuota || 6,
+      leaveQuota: leaveQuota || 0,
+      sickLeaveQuota: sickLeaveQuota || 0,
+      personalLeaveQuota: personalLeaveQuota || 0,
+      maternityLeaveQuota: maternityLeaveQuota || 0,
+      sterilizationLeaveQuota: sterilizationLeaveQuota || 0,
+      unpaidLeaveQuota: unpaidLeaveQuota || 0,
+      compassionateLeaveQuota: compassionateLeaveQuota || 0,
     });
 
     return NextResponse.json({
