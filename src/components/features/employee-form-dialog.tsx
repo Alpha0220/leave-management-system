@@ -18,6 +18,10 @@ interface EmployeeFormDialogProps {
     leaveQuota: number;
     sickLeaveQuota: number;
     personalLeaveQuota: number;
+    maternityLeaveQuota: number;
+    sterilizationLeaveQuota: number;
+    unpaidLeaveQuota: number;
+    compassionateLeaveQuota: number;
   } | null;
 }
 
@@ -31,6 +35,10 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
     leaveQuota: 10,
     sickLeaveQuota: 30,
     personalLeaveQuota: 6,
+    maternityLeaveQuota: 120,
+    sterilizationLeaveQuota: 999,
+    unpaidLeaveQuota: 999,
+    compassionateLeaveQuota: 3,
   });
 
   const isEditMode = !!employee;
@@ -51,6 +59,10 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
               leaveQuota: data.settings.annualLeaveMax || 10,
               sickLeaveQuota: data.settings.sickLeaveMax || 30,
               personalLeaveQuota: data.settings.personalLeaveMax || 6,
+              maternityLeaveQuota: data.settings.maternityLeaveMax || 120,
+              sterilizationLeaveQuota: data.settings.sterilizationLeaveMax || 999,
+              unpaidLeaveQuota: data.settings.unpaidLeaveMax || 999,
+              compassionateLeaveQuota: data.settings.compassionateLeaveMax || 3,
             });
           }
         } catch (error) {
@@ -63,6 +75,10 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
             leaveQuota: 10,
             sickLeaveQuota: 30,
             personalLeaveQuota: 6,
+            maternityLeaveQuota: 120,
+            sterilizationLeaveQuota: 999,
+            unpaidLeaveQuota: 999,
+            compassionateLeaveQuota: 3,
           });
         }
       }
@@ -81,6 +97,10 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
         leaveQuota: employee.leaveQuota ?? 10,
         sickLeaveQuota: employee.sickLeaveQuota ?? 30,
         personalLeaveQuota: employee.personalLeaveQuota ?? 6,
+        maternityLeaveQuota: employee.maternityLeaveQuota ?? 120,
+        sterilizationLeaveQuota: employee.sterilizationLeaveQuota ?? 999,
+        unpaidLeaveQuota: employee.unpaidLeaveQuota ?? 999,
+        compassionateLeaveQuota: employee.compassionateLeaveQuota ?? 3,
       });
       setError(null);
     }
@@ -196,6 +216,48 @@ export function EmployeeFormDialog({ open, onClose, onSuccess, employee }: Emplo
               min={0}
               value={formData.personalLeaveQuota}
               onChange={(e) => setFormData({ ...formData, personalLeaveQuota: parseInt(e.target.value) || 0 })}
+              helperText="วัน"
+            />
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <Input
+              type="number"
+              label="ลาคลอด"
+              required
+              min={0}
+              value={formData.maternityLeaveQuota}
+              onChange={(e) => setFormData({ ...formData, maternityLeaveQuota: parseInt(e.target.value) || 0 })}
+              helperText="วัน"
+            />
+
+            <Input
+              type="number"
+              label="ลาทำหมัน"
+              required
+              min={0}
+              value={formData.sterilizationLeaveQuota}
+              onChange={(e) => setFormData({ ...formData, sterilizationLeaveQuota: parseInt(e.target.value) || 0 })}
+              helperText="วัน (999=ไม่จำกัด)"
+            />
+
+            <Input
+              type="number"
+              label="ลาไม่รับค่าจ้าง"
+              required
+              min={0}
+              value={formData.unpaidLeaveQuota}
+              onChange={(e) => setFormData({ ...formData, unpaidLeaveQuota: parseInt(e.target.value) || 0 })}
+              helperText="วัน (999=ไม่จำกัด)"
+            />
+
+            <Input
+              type="number"
+              label="ลาฌาปนกิจ"
+              required
+              min={0}
+              value={formData.compassionateLeaveQuota}
+              onChange={(e) => setFormData({ ...formData, compassionateLeaveQuota: parseInt(e.target.value) || 0 })}
               helperText="วัน"
             />
           </div>

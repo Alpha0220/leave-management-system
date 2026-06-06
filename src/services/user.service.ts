@@ -51,6 +51,10 @@ export async function createUser(input: UserCreateInput): Promise<User> {
     leaveQuota: input.leaveQuota ?? DEFAULT_QUOTAS.ANNUAL_LEAVE,
     sickLeaveQuota: input.sickLeaveQuota ?? DEFAULT_QUOTAS.SICK_LEAVE,
     personalLeaveQuota: input.personalLeaveQuota ?? DEFAULT_QUOTAS.PERSONAL_LEAVE,
+    maternityLeaveQuota: input.maternityLeaveQuota ?? DEFAULT_QUOTAS.MATERNITY_LEAVE,
+    sterilizationLeaveQuota: input.sterilizationLeaveQuota ?? DEFAULT_QUOTAS.STERILIZATION_LEAVE,
+    unpaidLeaveQuota: input.unpaidLeaveQuota ?? DEFAULT_QUOTAS.UNPAID_LEAVE,
+    compassionateLeaveQuota: input.compassionateLeaveQuota ?? DEFAULT_QUOTAS.COMPASSIONATE_LEAVE,
     isRegistered: false,
     createdAt: new Date().toISOString()
   };
@@ -83,7 +87,7 @@ export async function updateUser(
   // Update in sheet (row index + 2 because of header and 1-based indexing)
   const rowNumber = userIndex + 2;
   const row = userToRow(updatedUser);
-  await writeSheet(SHEET_NAMES.USERS, `A${rowNumber}:I${rowNumber}`, [row]);
+  await writeSheet(SHEET_NAMES.USERS, `A${rowNumber}:M${rowNumber}`, [row]);
 
   return updatedUser;
 }
@@ -93,7 +97,7 @@ export async function updateUser(
  */
 export async function updateUserQuota(
   empId: string,
-  quotaType: 'leaveQuota' | 'sickLeaveQuota' | 'personalLeaveQuota',
+  quotaType: 'leaveQuota' | 'sickLeaveQuota' | 'personalLeaveQuota' | 'maternityLeaveQuota' | 'sterilizationLeaveQuota' | 'unpaidLeaveQuota',
   amount: number
 ): Promise<void> {
   const user = await getUserByEmpId(empId);
@@ -112,7 +116,7 @@ export async function updateUserQuota(
  */
 export async function deductUserQuota(
   empId: string,
-  quotaType: 'leaveQuota' | 'sickLeaveQuota' | 'personalLeaveQuota',
+  quotaType: 'leaveQuota' | 'sickLeaveQuota' | 'personalLeaveQuota' | 'maternityLeaveQuota' | 'sterilizationLeaveQuota' | 'unpaidLeaveQuota',
   days: number
 ): Promise<void> {
   const user = await getUserByEmpId(empId);
@@ -187,11 +191,11 @@ export async function deleteUser(empId: string): Promise<void> {
 
   // Rewrite entire sheet with updated users
   const rows = [
-    ['empId', 'name', 'password', 'role', 'leaveQuota', 'sickLeaveQuota', 'personalLeaveQuota', 'isRegistered', 'createdAt'],
+    ['empId', 'name', 'password', 'role', 'leaveQuota', 'sickLeaveQuota', 'personalLeaveQuota', 'maternityLeaveQuota', 'sterilizationLeaveQuota', 'unpaidLeaveQuota', 'compassionateLeaveQuota', 'isRegistered', 'createdAt'],
     ...updatedUsers.map(userToRow)
   ];
 
-  await writeSheet(SHEET_NAMES.USERS, 'A1:I' + (rows.length), rows);
+  await writeSheet(SHEET_NAMES.USERS, 'A1:M' + (rows.length), rows);
 }
 
 // Helper functions
@@ -205,8 +209,12 @@ function rowToUser(row: (string | number | boolean)[]): User {
     leaveQuota: typeof row[4] === 'number' ? row[4] : parseInt(String(row[4])) || 0,
     sickLeaveQuota: typeof row[5] === 'number' ? row[5] : parseInt(String(row[5])) || 0,
     personalLeaveQuota: typeof row[6] === 'number' ? row[6] : parseInt(String(row[6])) || 0,
-    isRegistered: String(row[7]).toLowerCase() === 'true' || row[7] === true,
-    createdAt: String(row[8] || new Date().toISOString())
+    maternityLeaveQuota: typeof row[7] === 'number' ? row[7] : parseInt(String(row[7])) || DEFAULT_QUOTAS.MATERNITY_LEAVE,
+    sterilizationLeaveQuota: typeof row[8] === 'number' ? row[8] : parseInt(String(row[8])) || DEFAULT_QUOTAS.STERILIZATION_LEAVE,
+    unpaidLeaveQuota: typeof row[9] === 'number' ? row[9] : parseInt(String(row[9])) || DEFAULT_QUOTAS.UNPAID_LEAVE,
+    compassionateLeaveQuota: typeof row[10] === 'number' ? row[10] : parseInt(String(row[10])) || DEFAULT_QUOTAS.COMPASSIONATE_LEAVE,
+    isRegistered: String(row[11]).toLowerCase() === 'true' || row[11] === true,
+    createdAt: String(row[12] || new Date().toISOString())
   };
 }
 
@@ -219,6 +227,10 @@ function userToRow(user: User): (string | number | boolean)[] {
     user.leaveQuota,
     user.sickLeaveQuota,
     user.personalLeaveQuota,
+    user.maternityLeaveQuota,
+    user.sterilizationLeaveQuota,
+    user.unpaidLeaveQuota,
+    user.compassionateLeaveQuota,
     user.isRegistered.toString(),
     user.createdAt
   ];

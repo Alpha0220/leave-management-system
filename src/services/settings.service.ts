@@ -39,13 +39,18 @@ export async function getPolicySettings(year: number): Promise<PolicySettings> {
     if (typeof defaultValue === 'boolean') {
       return setting.value === 'true';
     }
-    return parseInt(setting.value) || defaultValue;
+    const val = parseInt(setting.value);
+    return isNaN(val) ? defaultValue : val;
   };
 
   return {
     annualLeaveMax: getValue('annualLeaveMax', 10) as number,
     sickLeaveMax: getValue('sickLeaveMax', 30) as number,
     personalLeaveMax: getValue('personalLeaveMax', 6) as number,
+    maternityLeaveMax: getValue('maternityLeaveMax', 120) as number,
+    sterilizationLeaveMax: getValue('sterilizationLeaveMax', 999) as number,
+    unpaidLeaveMax: getValue('unpaidLeaveMax', 999) as number,
+    compassionateLeaveMax: getValue('compassionateLeaveMax', 3) as number,
     minAdvanceNoticeDays: getValue('minAdvanceNoticeDays', 3) as number,
     carryOverEnabled: getValue('carryOverEnabled', false) as boolean,
     carryOverMaxDays: getValue('carryOverMaxDays', 5) as number
@@ -53,35 +58,53 @@ export async function getPolicySettings(year: number): Promise<PolicySettings> {
 }
 
 /**
- * Update a setting
+ * Update multiple settings at once
+ */
+export async function updateSettings(
+  updates: { key: string; value: string }[],
+  year: number
+): Promise<void> {
+  const allRows = await readSheet(SHEET_NAMES.SETTINGS);
+  const header = allRows[0] || ['key', 'value', 'year'];
+  const settingsRows = allRows.slice(1);
+  
+  // Track which keys we updated
+  const updatedKeys = new Set<string>();
+
+  // Update existing rows
+  const newRows = settingsRows.map(row => {
+    const key = String(row[0]);
+    const rowYear = parseInt(String(row[2]));
+    
+    const update = updates.find(u => u.key === key && rowYear === year);
+    if (update) {
+      updatedKeys.add(key);
+      return [update.key, update.value, year];
+    }
+    return row;
+  });
+
+  // Add new rows for keys that weren't in the sheet for this year
+  const rowsToAdd = updates
+    .filter(u => !updatedKeys.has(u.key))
+    .map(u => [u.key, u.value, year]);
+
+  const finalRows = [header, ...newRows, ...rowsToAdd] as (string | number | boolean)[][];
+
+  // Rewrite the whole sheet (more efficient for multiple updates)
+  await clearSheet(SHEET_NAMES.SETTINGS);
+  await writeSheet(SHEET_NAMES.SETTINGS, `A1:C${finalRows.length}`, finalRows);
+}
+
+/**
+ * Update a single setting (delegates to updateSettings)
  */
 export async function updateSetting(
   key: string,
   value: string,
   year: number
 ): Promise<void> {
-  const settings = await getSettings(year);
-  const settingIndex = settings.findIndex(s => s.key === key);
-
-  if (settingIndex === -1) {
-    // Add new setting
-    const newSetting: Setting = { key, value, year };
-    const row = settingToRow(newSetting);
-    await appendSheet(SHEET_NAMES.SETTINGS, [row]);
-  } else {
-    // Update existing setting
-    const allRows = await readSheet(SHEET_NAMES.SETTINGS);
-    const rowIndex = allRows.slice(1).findIndex(
-      row => String(row[0]) === key && parseInt(String(row[2])) === year
-    );
-    
-    if (rowIndex !== -1) {
-      const rowNumber = rowIndex + 2; // +1 for header, +1 for 1-based indexing
-      const updatedSetting: Setting = { key, value, year };
-      const row = settingToRow(updatedSetting);
-      await writeSheet(SHEET_NAMES.SETTINGS, `A${rowNumber}:C${rowNumber}`, [row]);
-    }
-  }
+  await updateSettings([{ key, value }], year);
 }
 
 /**

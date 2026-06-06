@@ -8,7 +8,7 @@ import { Loader2, FileText } from 'lucide-react';
 interface LeaveRequest {
   id: string;
   empId: string;
-  type: 'annual' | 'sick' | 'personal';
+  type: 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid';
   startDate: string;
   endDate: string;
   totalDays: number;
@@ -23,6 +23,9 @@ const LEAVE_TYPE_LABELS = {
   annual: 'ลาพักร้อน',
   sick: 'ลาป่วย',
   personal: 'ลากิจ',
+  maternity: 'ลาคลอด',
+  sterilization: 'ลาทำหมัน',
+  unpaid: 'ลาไม่รับค่าจ้าง',
 };
 
 const STATUS_VARIANTS = {

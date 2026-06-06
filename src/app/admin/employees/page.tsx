@@ -15,6 +15,10 @@ interface Employee {
   leaveQuota: number;
   sickLeaveQuota: number;
   personalLeaveQuota: number;
+  maternityLeaveQuota: number;
+  sterilizationLeaveQuota: number;
+  unpaidLeaveQuota: number;
+  compassionateLeaveQuota: number;
 }
 
 export default function AdminEmployeesPage() {
@@ -220,6 +224,10 @@ function AdminEmployeesContent() {
                       <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาพักร้อน</th>
                       <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาป่วย</th>
                       <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลากิจ</th>
+                      <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาคลอด</th>
+                      <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาทำหมัน</th>
+                      <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาไม่รับค่าจ้าง</th>
+                      <th className="px-4 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-center">ลาฌาปนกิจ</th>
                       <th className="px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest text-right">การจัดการ</th>
                     </>
                   )}
@@ -316,6 +324,18 @@ function AdminEmployeesContent() {
                         </td>
                         <td className="px-4 py-5 text-center">
                           <span className="font-black text-orange-600 text-lg">{employee.personalLeaveQuota}</span>
+                        </td>
+                        <td className="px-4 py-5 text-center">
+                          <span className="font-black text-pink-600 text-lg">{employee.maternityLeaveQuota}</span>
+                        </td>
+                        <td className="px-4 py-5 text-center">
+                          <span className="font-black text-purple-600 text-lg">{employee.sterilizationLeaveQuota}</span>
+                        </td>
+                        <td className="px-4 py-5 text-center">
+                          <span className="font-black text-teal-600 text-lg">{employee.unpaidLeaveQuota}</span>
+                        </td>
+                        <td className="px-4 py-5 text-center">
+                          <span className="font-black text-indigo-600 text-lg">{employee.compassionateLeaveQuota}</span>
                         </td>
                         
                         {/* Actions */}

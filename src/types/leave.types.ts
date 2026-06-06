@@ -2,7 +2,7 @@
  * Leave-related type definitions
  */
 
-export type LeaveType = 'annual' | 'sick' | 'personal';
+export type LeaveType = 'annual' | 'sick' | 'personal' | 'maternity' | 'sterilization' | 'unpaid' | 'compassionate';
 export type LeaveStatus = 'pending' | 'approved' | 'rejected';
 
 export interface LeaveRequest {
@@ -44,7 +44,11 @@ export interface LeaveStatistics {
 export const LEAVE_TYPE_LABELS: Record<LeaveType, string> = {
   annual: 'ลาพักร้อน',
   sick: 'ลาป่วย',
-  personal: 'ลากิจ'
+  personal: 'ลากิจ',
+  maternity: 'ลาคลอด',
+  sterilization: 'ลาทำหมัน',
+  unpaid: 'ลาไม่รับค่าจ้าง',
+  compassionate: 'ลาฌาปนกิจ'
 };
 
 export const LEAVE_STATUS_LABELS: Record<LeaveStatus, string> = {

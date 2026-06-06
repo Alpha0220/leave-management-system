@@ -23,6 +23,10 @@ export interface AuthUser {
   leaveQuota: number;
   sickLeaveQuota: number;
   personalLeaveQuota: number;
+  maternityLeaveQuota: number;
+  sterilizationLeaveQuota: number;
+  unpaidLeaveQuota: number;
+  compassionateLeaveQuota: number;
 }
 
 /**
@@ -61,6 +65,10 @@ export async function login(credentials: LoginCredentials): Promise<AuthUser> {
     leaveQuota: user.leaveQuota,
     sickLeaveQuota: user.sickLeaveQuota,
     personalLeaveQuota: user.personalLeaveQuota,
+    maternityLeaveQuota: user.maternityLeaveQuota,
+    sterilizationLeaveQuota: user.sterilizationLeaveQuota,
+    unpaidLeaveQuota: user.unpaidLeaveQuota,
+    compassionateLeaveQuota: user.compassionateLeaveQuota,
   };
 }
 
@@ -111,6 +119,10 @@ export async function register(data: RegisterData): Promise<{ success: boolean; 
       leaveQuota: user.leaveQuota,
       sickLeaveQuota: user.sickLeaveQuota,
       personalLeaveQuota: user.personalLeaveQuota,
+      maternityLeaveQuota: user.maternityLeaveQuota,
+      sterilizationLeaveQuota: user.sterilizationLeaveQuota,
+      unpaidLeaveQuota: user.unpaidLeaveQuota,
+      compassionateLeaveQuota: user.compassionateLeaveQuota,
     },
   };
 }
@@ -133,6 +145,10 @@ export async function verifySession(empId: string): Promise<AuthUser | null> {
       leaveQuota: user.leaveQuota,
       sickLeaveQuota: user.sickLeaveQuota,
       personalLeaveQuota: user.personalLeaveQuota,
+      maternityLeaveQuota: user.maternityLeaveQuota,
+      sterilizationLeaveQuota: user.sterilizationLeaveQuota,
+      unpaidLeaveQuota: user.unpaidLeaveQuota,
+      compassionateLeaveQuota: user.compassionateLeaveQuota,
     };
   } catch {
     return null;

@@ -52,11 +52,15 @@ async function createUsersSheetIfNotExists() {
       'leaveQuota',
       'sickLeaveQuota',
       'personalLeaveQuota',
+      'maternityLeaveQuota',
+      'sterilizationLeaveQuota',
+      'unpaidLeaveQuota',
+      'compassionateLeaveQuota',
       'isRegistered',
       'createdAt'
     ];
 
-    await writeSheet(SHEET_NAMES.USERS, 'A1:I1', [headers]);
+    await writeSheet(SHEET_NAMES.USERS, 'A1:M1', [headers]);
 
     // Add default admin user
     const adminRow = [
@@ -67,6 +71,10 @@ async function createUsersSheetIfNotExists() {
       DEFAULT_ADMIN.leaveQuota,
       DEFAULT_ADMIN.sickLeaveQuota,
       DEFAULT_ADMIN.personalLeaveQuota,
+      DEFAULT_ADMIN.maternityLeaveQuota,
+      DEFAULT_ADMIN.sterilizationLeaveQuota,
+      DEFAULT_ADMIN.unpaidLeaveQuota,
+      DEFAULT_ADMIN.compassionateLeaveQuota,
       DEFAULT_ADMIN.isRegistered.toString(),
       new Date().toISOString()
     ];
@@ -170,18 +178,110 @@ async function createHolidaysSheetIfNotExists() {
 }
 
 /**
- * Check if sheets are initialized
+ * Run migration to update existing sheets to latest version
  */
-export async function checkSheetsInitialized(): Promise<boolean> {
+export async function runMigration(): Promise<{ success: boolean; message: string }> {
+  console.log('🔄 Starting database migration...');
+  
   try {
-    const usersExists = await sheetExists(SHEET_NAMES.USERS);
-    const leavesExists = await sheetExists(SHEET_NAMES.LEAVES);
-    const settingsExists = await sheetExists(SHEET_NAMES.SETTINGS);
-    const holidaysExists = await sheetExists(SHEET_NAMES.HOLIDAYS);
+    const { readSheet, writeSheet, clearSheet } = await import('@/lib/google-sheets');
+    const { DEFAULT_QUOTAS } = await import('@/lib/constants');
 
-    return usersExists && leavesExists && settingsExists && holidaysExists;
+    // 1. Update Users Sheet
+    const userRows = await readSheet(SHEET_NAMES.USERS);
+    const targetHeader = [
+      'empId', 'name', 'password', 'role', 
+      'leaveQuota', 'sickLeaveQuota', 'personalLeaveQuota', 
+      'maternityLeaveQuota', 'sterilizationLeaveQuota', 'unpaidLeaveQuota', 'compassionateLeaveQuota',
+      'isRegistered', 'createdAt'
+    ];
+
+    if (userRows.length > 0) {
+      const currentHeader = userRows[0];
+      const isHeaderCorrect = targetHeader.every((h, i) => currentHeader[i] === h);
+      
+      if (!isHeaderCorrect || currentHeader.length < 13) {
+        console.log('📝 Migrating Users sheet schema and fixing headers...');
+        
+        const updatedRows = userRows.slice(1).map(row => {
+          // If the row already has 13 columns but perhaps wrong headers, we need to decide how to keep data
+          // If it was 9 columns: 
+          // 0:empId, 1:name, 2:password, 3:role, 4:lQ, 5:sLQ, 6:pLQ, 7:isReg, 8:cAt
+          
+          let isReg = 'false';
+          let cat = new Date().toISOString();
+          let maternity: number = DEFAULT_QUOTAS.MATERNITY_LEAVE;
+          let sterilization: number = DEFAULT_QUOTAS.STERILIZATION_LEAVE;
+          let unpaid: number = DEFAULT_QUOTAS.UNPAID_LEAVE;
+          let compassionate: number = DEFAULT_QUOTAS.COMPASSIONATE_LEAVE;
+
+          if (row.length <= 10) {
+            // Old 9-col (or 10-col) format
+            isReg = String(row[7] || 'false');
+            cat = String(row[8] || new Date().toISOString());
+          } else {
+            // Current messy 13-col format or something else
+            // Let's try to preserve what looks like quota data
+            maternity = parseInt(String(row[7])) || DEFAULT_QUOTAS.MATERNITY_LEAVE;
+            sterilization = parseInt(String(row[8])) || DEFAULT_QUOTAS.STERILIZATION_LEAVE;
+            unpaid = parseInt(String(row[9])) || DEFAULT_QUOTAS.UNPAID_LEAVE;
+            compassionate = parseInt(String(row[10])) || DEFAULT_QUOTAS.COMPASSIONATE_LEAVE;
+            isReg = String(row[11] || 'false');
+            cat = String(row[12] || new Date().toISOString());
+          }
+          
+          return [
+            row[0] || '', // empId
+            row[1] || '', // name
+            row[2] || '', // password
+            row[3] || 'employee', // role
+            row[4] || 0,  // leaveQuota
+            row[5] || 0,  // sickLeaveQuota
+            row[6] || 0,  // personalLeaveQuota
+            maternity,
+            sterilization,
+            unpaid,
+            compassionate,
+            isReg,
+            cat
+          ];
+        });
+
+        const finalRows = [targetHeader, ...updatedRows] as (string | number | boolean)[][];
+        await clearSheet(SHEET_NAMES.USERS);
+        await writeSheet(SHEET_NAMES.USERS, `A1:M${finalRows.length}`, finalRows);
+        console.log('✅ Users sheet migrated and headers corrected');
+      }
+    }
+
+    // 2. Update Settings Sheet (Add new leave type defaults if missing)
+    const settingsRows = await readSheet(SHEET_NAMES.SETTINGS);
+    if (settingsRows.length > 0) {
+      const existingKeys = new Set(settingsRows.slice(1).map(r => String(r[0])));
+      const currentYear = new Date().getFullYear().toString();
+      const newSettings = [];
+
+      if (!existingKeys.has('maternityLeaveMax')) newSettings.push(['maternityLeaveMax', '120', currentYear]);
+      if (!existingKeys.has('sterilizationLeaveMax')) newSettings.push(['sterilizationLeaveMax', '999', currentYear]);
+      if (!existingKeys.has('unpaidLeaveMax')) newSettings.push(['unpaidLeaveMax', '999', currentYear]);
+      if (!existingKeys.has('compassionateLeaveMax')) newSettings.push(['compassionateLeaveMax', '3', currentYear]);
+
+      if (newSettings.length > 0) {
+        console.log('📝 Adding new default settings...');
+        await appendSheet(SHEET_NAMES.SETTINGS, newSettings);
+        console.log('✅ Settings sheet updated');
+      }
+    }
+
+    return { 
+      success: true, 
+      message: 'Database migrated successfully to version 2.0' 
+    };
   } catch (error) {
-    console.error('Error checking sheets:', error);
-    return false;
+    console.error('❌ Migration error:', error);
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Unknown migration error' 
+    };
   }
 }
